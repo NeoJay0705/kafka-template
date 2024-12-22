@@ -1,0 +1,94 @@
+version: '3.9'
+
+services:
+  kafka1:
+    image: bitnami/kafka:3.9.0
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "9092:9094"
+    environment:
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka1:9093,2@kafka2:9093,3@kafka3:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://kafka1:9092,CONTROLLER://kafka1:9093,EXTERNAL://:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka1:9092,EXTERNAL://localhost:9092
+      # - KAFKA_CFG_LOG_DIRS=/opt/kafka/kraft-logs
+      # - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_KRAFT_CLUSTER_ID=A6wMVoGdQfWiRqdG2HJjKQ
+    volumes:
+      - kafka1_data:/bitnami/kafka
+
+  kafka2:
+    image: bitnami/kafka:3.9.0
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "9094:9094"
+    environment:
+      - KAFKA_CFG_NODE_ID=2
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka1:9093,2@kafka2:9093,3@kafka3:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://kafka2:9092,CONTROLLER://kafka2:9093,EXTERNAL://:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka2:9092,EXTERNAL://localhost:9094
+      # - KAFKA_CFG_LOG_DIRS=/opt/kafka/kraft-logs
+      # - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_KRAFT_CLUSTER_ID=A6wMVoGdQfWiRqdG2HJjKQ
+    volumes:
+      - kafka2_data:/bitnami/kafka
+
+  kafka3:
+    image: bitnami/kafka:3.9.0
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "9096:9094"
+    environment:
+      - KAFKA_CFG_NODE_ID=3
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka1:9093,2@kafka2:9093,3@kafka3:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://kafka3:9092,CONTROLLER://kafka3:9093,EXTERNAL://:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka3:9092,EXTERNAL://localhost:9096
+      # - KAFKA_CFG_LOG_DIRS=/opt/kafka/kraft-logs
+      # - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_KRAFT_CLUSTER_ID=A6wMVoGdQfWiRqdG2HJjKQ
+    volumes:
+      - kafka3_data:/bitnami/kafka
+
+  kafka-console:
+    image: bitnami/kafka:3.9.0
+    container_name: kafka-console
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      - KAFKA_CFG_BOOTSTRAP_SERVERS=kafka1:9092,kafka2:9092,kafka3:9092
+    entrypoint: ["sh", "-c", "sleep infinity"]
+
+volumes:
+  kafka1_data:
+  kafka2_data:
+  kafka3_data:
+
+# docker-compose up -d
+# docker-compose down --volumes
+
+# docker exec -it kafka-console bash
+# kafka-topics.sh --create --bootstrap-server kafka1:9092 --replication-factor 1 --partitions 3 --topic my-topic
+# kafka-topics.sh --list --bootstrap-server kafka2:9092
+# kafka-topics.sh --bootstrap-server kafka3:9092 --describe --topic my-topicpic
+# kafka-topics.sh --create --topic hybrid-topic --bootstrap-server localhost:9092 --partitions 4 --replication-factor 3 --config cleanup.policy=compact,delete --config retention.ms=2592000000 --config retention.bytes=2147483648        
+# kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --group my-consumer-group --describe
+# kafka-topics.sh --delete --topic logs-topic --bootstrap-server kafka1:9092
+
+# kafka-console-producer.sh --broker-list kafka3:9092 --topic my-topic
+# kafka-console-producer.sh --broker-list kafka3:9092 --topic my-topic --property "parse.key=true" --property "key.separator=:"
+
+# kafka-console-consumer.sh --bootstrap-server kafka1:9092 --topic my-topic --from-beginning
