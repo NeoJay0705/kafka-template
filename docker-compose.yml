@@ -20,6 +20,13 @@ services:
       - KAFKA_KRAFT_CLUSTER_ID=A6wMVoGdQfWiRqdG2HJjKQ
     volumes:
       - kafka1_data:/bitnami/kafka
+    networks:
+      - shared-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
 
   kafka2:
     image: bitnami/kafka:3.9.0
@@ -40,6 +47,13 @@ services:
       - KAFKA_KRAFT_CLUSTER_ID=A6wMVoGdQfWiRqdG2HJjKQ
     volumes:
       - kafka2_data:/bitnami/kafka
+    networks:
+      - shared-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
 
   kafka3:
     image: bitnami/kafka:3.9.0
@@ -60,6 +74,13 @@ services:
       - KAFKA_KRAFT_CLUSTER_ID=A6wMVoGdQfWiRqdG2HJjKQ
     volumes:
       - kafka3_data:/bitnami/kafka
+    networks:
+      - shared-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
 
   kafka-console:
     image: bitnami/kafka:3.9.0
@@ -70,12 +91,18 @@ services:
       - kafka3
     environment:
       - KAFKA_CFG_BOOTSTRAP_SERVERS=kafka1:9092,kafka2:9092,kafka3:9092
+    networks:
+      - shared-network
     entrypoint: ["sh", "-c", "sleep infinity"]
 
 volumes:
   kafka1_data:
   kafka2_data:
   kafka3_data:
+
+networks:
+  shared-network:
+    external: true
 
 # docker-compose up -d
 # docker-compose down --volumes
